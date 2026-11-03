@@ -12,6 +12,9 @@ os.environ["DATABASE_URL"] = f"sqlite:///{(_TMP / 'test.db').as_posix()}"
 os.environ["UPLOAD_DIR"] = str(_TMP / "uploads")
 os.environ["AI_FORCE_MOCK"] = "true"
 os.environ["JWT_SECRET"] = "test-secret-" + "x" * 40
+os.environ["FILE_ENCRYPTION_KEY"] = "dGVzdC1rZXktMzItYnl0ZXMtZm9yLWFlcy1nY20tISE="  # test-only, 32 bytes
+os.environ["STORAGE_BACKEND"] = "local"
+os.environ["ALLOW_FILE_DOWNLOAD"] = "true"
 for k in ("GEMINI_API_KEY", "GROQ_API_KEY", "OPENROUTER_API_KEY"):
     os.environ[k] = ""
 
@@ -20,6 +23,14 @@ from fastapi.testclient import TestClient  # noqa: E402
 from app.main import app  # noqa: E402
 
 SAMPLES = Path(__file__).resolve().parents[1] / "sample_data"
+
+
+@pytest.fixture
+def allow_download(monkeypatch):
+    """Let patients download their originals for this test (ALLOW_FILE_DOWNLOAD=true)."""
+    from app.core.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "allow_file_download", True)
 
 
 @pytest.fixture(scope="session")

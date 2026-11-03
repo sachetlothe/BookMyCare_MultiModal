@@ -6,6 +6,8 @@ __pycache__/
 backend/.env
 backend/*.db
 backend/uploads/
+# Development file-encryption key: losing it makes stored files unreadable; never commit it
+backend/.keys/
 
 # Node
 node_modules/
@@ -14,3 +16,10 @@ frontend/.env
 *.log
 .DS_Store
 e2e/screenshots/
+
+# SQLite WAL side files (contain database contents)
+*.db-wal
+*.db-shm
+
+# TypeScript incremental build info
+*.tsbuildinfo

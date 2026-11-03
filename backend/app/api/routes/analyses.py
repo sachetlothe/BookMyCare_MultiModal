@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, defer
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_file_key
 from app.db.session import get_db
 from app.models import Analysis, User
 from app.schemas.analysis import AnalysisCreate, AnalysisOut, AnalysisSummary
 from app.services.analysis_engine import AnalysisInputError, run_analysis
+from app.services import stats
 from app.services.symptoms import LABELS
 
 router = APIRouter(prefix="/analyses", tags=["analysis"])
@@ -21,9 +22,10 @@ def symptom_catalog():
 
 
 @router.post("", response_model=AnalysisOut, status_code=status.HTTP_201_CREATED)
-def create_analysis(body: AnalysisCreate, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def create_analysis(body: AnalysisCreate, user: User = Depends(get_current_user), db: Session = Depends(get_db),
+                    file_key: bytes | None = Depends(get_file_key)):
     try:
-        result = run_analysis(db, user, body)
+        result = run_analysis(db, user, body, file_key)
     except AnalysisInputError as exc:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from exc
     a = Analysis(
@@ -31,14 +33,24 @@ def create_analysis(body: AnalysisCreate, user: User = Depends(get_current_user)
         urgency=result["urgency"], provider=result["provenance"]["explanation_provider"], is_mock=result["is_mock"],
     )
     db.add(a)
+    stats.count_analysis(db, a)  # anonymous counters for team reports
     db.commit()
     db.refresh(a)
     return a
 
 
 @router.get("", response_model=list[AnalysisSummary])
-def list_analyses(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    rows = db.scalars(select(Analysis).where(Analysis.user_id == user.id).order_by(Analysis.created_at.desc(), Analysis.id.desc())).all()
+def list_analyses(
+    limit: int | None = Query(None, ge=1, le=500, description="Optional page size; omit to return all"),
+    offset: int = Query(0, ge=0),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    q = (select(Analysis).where(Analysis.user_id == user.id)
+         .order_by(Analysis.created_at.desc(), Analysis.id.desc()).offset(offset))
+    if limit is not None:
+        q = q.limit(limit)
+    rows = db.scalars(q).all()
     out = []
     for a in rows:
         s = AnalysisSummary.model_validate(a)

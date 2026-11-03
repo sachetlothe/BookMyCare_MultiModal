@@ -1,10 +1,19 @@
 import type {
-  Analysis, AnalysisInputs, AnalysisSummary, HistoryEntry, Profile, ReportDetail, ReportSummary,
-  SourceDoc, SystemStatus, TokenResponse, User,
+  Analysis, AnalysisInputs, AnalysisSummary, HistoryEntry, Profile, ReportDetail, ReportSummary, TrendsResponse,
+  FacilitiesResponse, Place, SecurityStatus, SourceDoc, Specialty, SpecialtyRecommendations, StaffPatientView, SupportRequest, SupportStatus, SystemStatus, TeamStats, TokenResponse, User,
 } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ?? "";
 const TOKEN_KEY = "bmc_token";
+const REASON_KEY = "bmc_signin_reason";
+
+/** Why the user was signed out (shown once on the login page). */
+export const signInReason = {
+  take: (): string | null => {
+    try { const r = sessionStorage.getItem(REASON_KEY); sessionStorage.removeItem(REASON_KEY); return r; } catch { return null; }
+  },
+  set: (r: string) => { try { sessionStorage.setItem(REASON_KEY, r); } catch { /* ignore */ } },
+};
 
 export class ApiError extends Error {
   status: number;
@@ -54,7 +63,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   let body: unknown = null;
   try { body = text ? JSON.parse(text) : null; } catch { body = null; }
   if (!res.ok) {
-    if (res.status === 401 && token && onUnauthorized) onUnauthorized();
+    if (res.status === 401 && token && onUnauthorized) {
+      signInReason.set(errorMessage(body, "Your session has ended. Please sign in again."));
+      onUnauthorized();
+    }
     throw new ApiError(res.status, errorMessage(body, `Request failed (${res.status})`));
   }
   return body as T;
@@ -68,6 +80,14 @@ export const api = {
   login: (email: string, password: string) =>
     request<TokenResponse>("/auth/login", { method: "POST", body: json({ email, password }) }),
   me: () => request<User>("/auth/me"),
+  securityStatus: () => request<SecurityStatus>("/auth/security"),
+  newRecoveryCode: (password: string) =>
+    request<{ recovery_code: string; recovery_created_at: string }>("/auth/recovery-code", { method: "POST", body: json({ password }) }),
+  changePassword: (current_password: string, new_password: string) =>
+    request<TokenResponse>("/auth/change-password", { method: "POST", body: json({ current_password, new_password }) }),
+  resetPassword: (email: string, recovery_code: string, new_password: string) =>
+    request<TokenResponse>("/auth/reset-password", { method: "POST", body: json({ email, recovery_code, new_password }) }),
+  logoutAll: () => request<void>("/auth/logout-all", { method: "POST" }),
   status: () => request<SystemStatus>("/system/status"),
 
   getProfile: () => request<Profile>("/profile"),
@@ -81,6 +101,23 @@ export const api = {
   listReports: (kind?: "report" | "image") => request<ReportSummary[]>(`/reports${kind ? `?kind=${kind}` : ""}`),
   getReport: (id: number) => request<ReportDetail>(`/reports/${id}`),
   uploadReport: (form: FormData) => request<ReportDetail>("/reports", { method: "POST", body: form }),
+  updateReport: (id: number, body: { title?: string; report_type?: string | null; report_date?: string | null }) =>
+    request<ReportDetail>(`/reports/${id}`, { method: "PATCH", body: json(body) }),
+  getTrends: () => request<TrendsResponse>("/trends"),
+  correctLab: (reportId: number, code: string, value: number) =>
+    request<ReportDetail>(`/reports/${reportId}/labs/${code}`, { method: "PATCH", body: json({ value }) }),
+
+  supportStatus: () => request<SupportStatus>("/support-access"),
+  grantSupport: (hours: number, reason: string | null) => request<SupportStatus>("/support-access", { method: "POST", body: json({ hours, reason }) }),
+  revokeSupport: () => request<SupportStatus>("/support-access", { method: "DELETE" }),
+
+  staffStats: () => request<TeamStats>("/staff/stats"),
+  staffRequests: () => request<SupportRequest[]>("/staff/support-requests"),
+  staffPatient: (id: number) => request<StaffPatientView>(`/staff/patients/${id}`),
+  staffCorrectLab: (pid: number, rid: number, code: string, value: number, note: string | null) =>
+    request<{ ok: boolean }>(`/staff/patients/${pid}/reports/${rid}/labs/${code}`, { method: "PATCH", body: json({ value, note }) }),
+  staffFixHistory: (pid: number, hid: number, body: { title?: string; details?: string | null; note?: string | null }) =>
+    request<{ ok: boolean }>(`/staff/patients/${pid}/history/${hid}`, { method: "PATCH", body: json(body) }),
   reprocessReport: (id: number) => request<ReportDetail>(`/reports/${id}/reprocess`, { method: "POST" }),
   deleteReport: (id: number) => request<void>(`/reports/${id}`, { method: "DELETE" }),
   reportFileUrl: (id: number) => `${BASE}/api/reports/${id}/file`,
@@ -95,6 +132,15 @@ export const api = {
   listAnalyses: () => request<AnalysisSummary[]>("/analyses"),
   getAnalysis: (id: number) => request<Analysis>(`/analyses/${id}`),
   deleteAnalysis: (id: number) => request<void>(`/analyses/${id}`, { method: "DELETE" }),
+
+  careSpecialties: () => request<Specialty[]>("/care/specialties"),
+  careSuggested: () => request<SpecialtyRecommendations>("/care/suggested"),
+  careFacilities: (lat: number, lon: number, radiusKm: number, specialty: string | null) => {
+    const q = new URLSearchParams({ lat: String(lat), lon: String(lon), radius_km: String(radiusKm) });
+    if (specialty) q.set("specialty", specialty);
+    return request<FacilitiesResponse>(`/care/facilities?${q}`);
+  },
+  geocode: (q: string) => request<{ results: Place[]; attribution: string }>(`/care/geocode?q=${encodeURIComponent(q)}`),
 
   searchKnowledge: (q: string, k = 8) => request<{ query: string; results: SourceDoc[] }>(`/knowledge/search?q=${encodeURIComponent(q)}&k=${k}`),
 };

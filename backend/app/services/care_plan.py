@@ -4,6 +4,7 @@ never include medicine names or doses."""
 from __future__ import annotations
 
 from app.services.safety import URGENCY_GUIDANCE
+from app.services import specialty
 from app.services.scoring import condition_by_key
 
 FOLLOW_UP = {
@@ -39,8 +40,8 @@ def build_care_plan(urgency: str, red_flags: list[dict], conditions: list[dict],
         self_care += cond.get("self_care", [])[:limit]
         see_doctor += cond.get("see_doctor_if", [])[:limit]
         tests += cond.get("suggested_tests", [])
-        if cond.get("specialist"):
-            specialists.append(cond["specialist"])
+        if cond:
+            specialists.append(specialty.label_for_condition(c["key"]))
 
     personal: list[str] = []
     age, bmi = profile_ctx.get("age"), profile_ctx.get("bmi")

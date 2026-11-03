@@ -11,6 +11,20 @@ export default defineConfig({
     port: 5173,
     proxy: { "/api": { target: apiTarget, changeOrigin: true } },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Long-lived vendor chunks: they change rarely, so browsers keep them cached across deploys.
+        // (three.js stays inside the lazily loaded 3D chunk on its own.)
+        manualChunks(id: string) {
+          if (!id.includes("node_modules")) return undefined;
+          if (/[\/]node_modules[\/](motion|framer-motion|motion-dom|motion-utils)[\/]/.test(id)) return "vendor-motion";
+          if (/[\/]node_modules[\/](react|react-dom|react-router|react-router-dom|scheduler)[\/]/.test(id)) return "vendor-react";
+          return undefined;
+        },
+      },
+    },
+  },
   preview: {
     port: 4173,
     proxy: { "/api": { target: apiTarget, changeOrigin: true } },

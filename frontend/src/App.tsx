@@ -1,19 +1,28 @@
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import type { ReactNode } from "react";
+import { Suspense, lazy, type ReactNode } from "react";
 import Layout from "./components/Layout";
 import { Spinner } from "./components/ui";
 import { useAuth } from "./lib/auth";
-import AnalysesPage from "./pages/Analyses";
-import AnalysisResultPage from "./pages/AnalysisResult";
-import DashboardPage from "./pages/Dashboard";
-import HistoryPage from "./pages/History";
-import LibraryPage from "./pages/Library";
-import { LoginPage, RegisterPage } from "./pages/Auth";
-import NewAnalysisPage from "./pages/NewAnalysis";
-import NotFoundPage from "./pages/NotFound";
-import ProfilePage from "./pages/Profile";
-import ReportDetailPage from "./pages/ReportDetail";
-import ReportsPage from "./pages/Reports";
+import HomePage from "./pages/Home";
+
+// Route-level code splitting: only the public homepage ships in the main bundle;
+// every other page downloads the first time it is visited.
+const AnalysesPage = lazy(() => import("./pages/Analyses"));
+const AnalysisResultPage = lazy(() => import("./pages/AnalysisResult"));
+const DashboardPage = lazy(() => import("./pages/Dashboard"));
+const FindCarePage = lazy(() => import("./pages/FindCare"));
+const HistoryPage = lazy(() => import("./pages/History"));
+const LibraryPage = lazy(() => import("./pages/Library"));
+const LoginPage = lazy(() => import("./pages/Auth").then((m) => ({ default: m.LoginPage })));
+const RegisterPage = lazy(() => import("./pages/Auth").then((m) => ({ default: m.RegisterPage })));
+const ResetPasswordPage = lazy(() => import("./pages/Auth").then((m) => ({ default: m.ResetPasswordPage })));
+const NewAnalysisPage = lazy(() => import("./pages/NewAnalysis"));
+const NotFoundPage = lazy(() => import("./pages/NotFound"));
+const ProfilePage = lazy(() => import("./pages/Profile"));
+const ReportDetailPage = lazy(() => import("./pages/ReportDetail"));
+const ReportsPage = lazy(() => import("./pages/Reports"));
+const TrendsPage = lazy(() => import("./pages/Trends"));
+const StaffPage = lazy(() => import("./pages/Staff"));
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -30,22 +39,28 @@ function GuestOnly({ children }: { children: ReactNode }) {
   if (user) {
     // Newly registered users go to their profile; returning users go back where they were.
     if (location.pathname === "/register") return <Navigate to="/profile" replace state={{ welcome: true }} />;
-    return <Navigate to={location.state?.from ?? "/"} replace />;
+    return <Navigate to={location.state?.from ?? "/dashboard"} replace />;
   }
   return <>{children}</>;
 }
 
 export default function App() {
   return (
+    <Suspense fallback={<div className="flex min-h-[50vh] items-center justify-center"><Spinner /></div>}>
     <Routes>
+      <Route index element={<HomePage />} />
       <Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} />
       <Route path="/register" element={<GuestOnly><RegisterPage /></GuestOnly>} />
+      <Route path="/reset-password" element={<GuestOnly><ResetPasswordPage /></GuestOnly>} />
       <Route element={<RequireAuth><Layout /></RequireAuth>}>
-        <Route index element={<DashboardPage />} />
+        <Route path="dashboard" element={<DashboardPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="history" element={<HistoryPage />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="reports/:id" element={<ReportDetailPage />} />
+        <Route path="trends" element={<TrendsPage />} />
+        <Route path="care" element={<FindCarePage />} />
+        <Route path="staff" element={<StaffPage />} />
         <Route path="analyses" element={<AnalysesPage />} />
         <Route path="analyses/new" element={<NewAnalysisPage />} />
         <Route path="analyses/:id" element={<AnalysisResultPage />} />
@@ -53,5 +68,6 @@ export default function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
+    </Suspense>
   );
 }

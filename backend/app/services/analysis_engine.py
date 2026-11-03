@@ -26,12 +26,14 @@ from app.ai.base import ImageInput, LLMRequest
 from app.core.config import get_settings
 from app.models import MedicalHistoryEntry, MedicalReport, User
 from app.ai.mock import MOCK_NOTICE
-from app.services import grounding
+from app.services import grounding, specialty
 from app.services.care_plan import build_care_plan
-from app.services.lab_parser import abnormal, parse_lab_values
+from app.services.file_store import FileMissing, FileUnreadable, PatientKeyRequired, StorageError, get_file_store
+from app.services.lab_parser import abnormal, reclassify
 from app.services.safety import DISCLAIMER, URGENCY_GUIDANCE, detect_red_flags, sanitize_payload, urgency_from
 from app.services.scoring import ENGINE_VERSION, condition_by_key, score_conditions
 from app.services.symptoms import LABELS, normalise
+from app.services.trends import compute_trends, trend_signals
 
 log = logging.getLogger(__name__)
 
@@ -80,7 +82,7 @@ def profile_context(user: User, db: Session) -> dict:
 
 SYSTEM_PROMPT = """You are the explanation module of BookMyCare, a patient-education screening tool. You do NOT diagnose.
 You receive JSON: rule-based screening results (urgency, red flags, possible conditions with the evidence for and against each,
-lab values, the patient's history) and numbered evidence passages from WHO/CDC with ids such as "S1".
+lab values, "lab_trends" (changes across the patient's earlier reports), the patient's history) and numbered evidence passages from WHO/CDC with ids such as "S1".
 Rules:
 1. "urgency" and "red_flags" are fixed by safety rules. Never change, soften or contradict them, and never say the patient does not need to see a doctor.
 2. Never state or imply a diagnosis. Use wording such as "may be consistent with" and "a doctor can confirm". Only discuss conditions listed in "conditions", and refer to them by their "key".
@@ -88,6 +90,7 @@ Rules:
 4. Take the patient's history (chronic conditions, medicines, allergies, family history, pregnancy) into account. Never recommend medicines, doses or changing treatment.
 5. Be explicit about uncertainty: what is missing, ambiguous or weakly supported.
 6. Write plain language for a patient (reading age about 14).
+7. When "lab_trends" is not empty, mention the most important change over time in "report_interpretation". Describe it as a change in results, not as proof of a cause, and never say a medicine caused it.
 Reply with ONLY a JSON object: {"summary": string (max 120 words), "report_interpretation": string (max 100 words, "" if there are no labs),
 "condition_notes": [{"key": string, "explanation": string (max 60 words), "cites": [string]}],
 "uncertainty": [string] (max 4), "questions_for_doctor": [string] (3 to 5)}"""
@@ -113,9 +116,8 @@ def _load_reports(db: Session, user: User, ids: list[int], kind: str) -> list[Me
     return list(rows)
 
 
-def _image_observations(images: list[MedicalReport]) -> tuple[list[dict], list[str], dict | None]:
+def _image_observations(images: list[MedicalReport], file_key: bytes | None = None) -> tuple[list[dict], list[str], dict | None]:
     """Run optional AI image observation. Returns (per-image results, finding terms, provider info)."""
-    s = get_settings()
     results, findings = [], []
     provider_info = None
     for img in images:
@@ -126,11 +128,14 @@ def _image_observations(images: list[MedicalReport]) -> tuple[list[dict], list[s
             "quality": img.image_features or {},
             "ai_observation": None,
         }
-        path = s.upload_dir / img.stored_filename
         try:
-            data = path.read_bytes()
-        except OSError:
-            entry["error"] = "Stored image file is missing."
+            data = get_file_store().load(img.stored_filename, file_key)
+        except PatientKeyRequired:
+            entry["error"] = "Sign in again to let the analysis open this image."
+            results.append(entry)
+            continue
+        except (FileMissing, FileUnreadable, StorageError):
+            entry["error"] = "Stored image file is missing or cannot be decrypted."
             results.append(entry)
             continue
         req = LLMRequest(
@@ -164,7 +169,7 @@ def _image_observations(images: list[MedicalReport]) -> tuple[list[dict], list[s
     return results, findings, provider_info
 
 
-def run_analysis(db: Session, user: User, payload) -> dict:
+def run_analysis(db: Session, user: User, payload, file_key: bytes | None = None) -> dict:
     t0 = time.perf_counter()
     reports = _load_reports(db, user, payload.report_ids, "report")
     images = _load_reports(db, user, payload.image_ids, "image")
@@ -174,12 +179,13 @@ def run_analysis(db: Session, user: User, payload) -> dict:
 
     pctx = profile_context(user, db)
 
-    # Labs: re-parse with the patient's sex so sex-specific ranges apply.
+    # Labs: stored values re-classified with the patient's sex so sex-specific ranges apply.
+    # (The report text is sealed with the patient's key and is not needed here.)
     labs: list[dict] = []
     report_summaries = []
     seen_keys: set[str] = set()
     for r in sorted(reports, key=lambda r: (r.report_date or date.min, r.id), reverse=True):
-        vals = parse_lab_values(r.extracted_text, pctx["sex"]) if r.extracted_text else []
+        vals = reclassify(r.lab_values, pctx["sex"])
         for v in vals:
             if v["key"] not in seen_keys:  # most recent report wins
                 v["report_id"] = r.id
@@ -188,12 +194,17 @@ def run_analysis(db: Session, user: User, payload) -> dict:
         report_summaries.append({"report_id": r.id, "title": r.title, "extraction_status": r.extraction_status, "lab_count": len(vals)})
     abnormal_labs = abnormal(labs)
 
-    image_results, image_findings, image_provider = _image_observations(images)
+    image_results, image_findings, image_provider = _image_observations(images, file_key)
 
-    conditions = score_conditions(symptoms, labs, pctx, payload.duration_days, image_findings)
+    # Longitudinal evidence from all of the patient's stored lab results (not only the selected reports).
+    trends = [t for t in compute_trends(db, user.id, pctx["sex"]) if t["n"] >= 2]
+    signals = trend_signals(trends)
+
+    conditions = score_conditions(symptoms, labs, pctx, payload.duration_days, image_findings, trends=signals)
     red_flags = detect_red_flags(symptoms, labs, pctx, payload.severity, payload.duration_days)
     urgency = urgency_from(red_flags, conditions, abnormal_labs)
     care_plan = build_care_plan(urgency, red_flags, conditions, abnormal_labs, pctx)
+    care_plan["specialty_recommendations"] = specialty.recommend(conditions, urgency, trends)
 
     # Evidence: WHO/CDC passages for each condition, red flag and history item (numbered S1, S2...)
     symptom_labels = [LABELS.get(k, k) for k in symptoms]
@@ -201,7 +212,7 @@ def run_analysis(db: Session, user: User, payload) -> dict:
 
     context = grounding.build_context(
         urgency=urgency, red_flags=red_flags, symptom_labels=symptom_labels, conditions=conditions, labs=labs,
-        pctx=pctx, sources=sources, cond_evidence=cond_evidence, abnormal_labs=abnormal_labs,
+        pctx=pctx, sources=sources, cond_evidence=cond_evidence, abnormal_labs=abnormal_labs, trends=trends,
     )
     explanation, ai = _explain(
         urgency=urgency, red_flags=red_flags, abnormal_labs=abnormal_labs, labs=labs, conditions=conditions,
@@ -211,6 +222,7 @@ def run_analysis(db: Session, user: User, payload) -> dict:
     data_completeness = {
         "symptoms": bool(symptoms),
         "lab_values": bool(labs),
+        "lab_history": bool(trends),
         "images": bool(images),
         "profile": bool(pctx["age"] is not None and pctx["sex"]),
     }
@@ -227,6 +239,8 @@ def run_analysis(db: Session, user: User, payload) -> dict:
             "Medical images are checked for quality only." if all((ir.get("ai_observation") or {}).get("is_mock", True) for ir in image_results)
             else "AI image observations come from a general-purpose vision model, are unverified, and carry only small weight."
         )
+    if trends:
+        limitations.append("Trends compare results from different reports and possibly different laboratories; small differences can come from the test method rather than a real change.")
     if not labs and reports:
         limitations.append("No lab values could be read from the selected reports.")
     if not data_completeness["profile"]:
@@ -247,6 +261,7 @@ def run_analysis(db: Session, user: User, payload) -> dict:
         "symptoms": [{"key": k, "label": LABELS.get(k, k)} for k in symptoms],
         "conditions": conditions,
         "lab_values": labs,
+        "trends": trends[:12],
         "abnormal_lab_count": len(abnormal_labs),
         "reports": report_summaries,
         "images": image_results,

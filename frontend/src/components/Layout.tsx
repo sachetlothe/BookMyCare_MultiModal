@@ -1,18 +1,22 @@
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
-  Activity, BookOpen, ClipboardList, FileText, HeartPulse, History, LayoutDashboard, LogOut, Menu, Stethoscope, User, X,
+  Activity, BookOpen, ClipboardList, FileText, HeartPulse, History, Home, LayoutDashboard, LineChart, LogOut, MapPin, Menu, Users, Stethoscope, User, X,
 } from "lucide-react";
 import { useAuth } from "../lib/auth";
 import { api } from "../lib/api";
 import type { SystemStatus } from "../lib/types";
-import { cx } from "./ui";
+import { Spinner, cx } from "./ui";
+import RecoveryCodeDialog from "./RecoveryCodeDialog";
 
 const NAV = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/", label: "Home", icon: Home, end: true },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/analyses/new", label: "New analysis", icon: Stethoscope },
   { to: "/analyses", label: "Analysis history", icon: Activity, end: true },
   { to: "/reports", label: "Reports & images", icon: FileText },
+  { to: "/trends", label: "Lab trends", icon: LineChart },
+  { to: "/care", label: "Find care", icon: MapPin },
   { to: "/history", label: "Medical history", icon: History },
   { to: "/profile", label: "My profile", icon: User },
   { to: "/library", label: "Health library", icon: BookOpen },
@@ -30,10 +34,11 @@ export function Logo({ className }: { className?: string }) {
 }
 
 export default function Layout() {
-  const { user, logout } = useAuth();
+  const { user, logout, hasRecoveryCode } = useAuth();
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<SystemStatus | null>(null);
   const location = useLocation();
+  const immersive = location.pathname === "/dashboard";
 
   useEffect(() => setOpen(false), [location.pathname]);
   useEffect(() => {
@@ -42,7 +47,7 @@ export default function Layout() {
 
   const nav = (
     <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main">
-      {NAV.map(({ to, label, icon: Icon, end }) => (
+      {(user?.role === "staff" ? [...NAV, { to: "/staff", label: "Team", icon: Users, end: false }] : NAV).map(({ to, label, icon: Icon, end }) => (
         <NavLink
           key={to}
           to={to}
@@ -103,20 +108,29 @@ export default function Layout() {
           <button onClick={() => setOpen(true)} aria-label="Open menu" className="rounded-lg p-2 hover:bg-slate-100"><Menu className="h-5 w-5" /></button>
         </header>
 
+        <RecoveryCodeDialog />
+        {hasRecoveryCode === false && (
+          <div className="no-print border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900">
+            <strong>No recovery code yet.</strong> Your files are encrypted with your password; without a recovery code a forgotten password means they cannot be opened.{" "}
+            <NavLink to="/profile#security" className="font-semibold underline">Create one now</NavLink>
+          </div>
+        )}
         {status?.ai.mock_mode && (
           <div className="no-print border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900">
             <strong>Mock AI mode:</strong> {status.ai.unavailable_message ?? "no real AI provider is available."} Explanations are template-based; screening uses the rule-based engine.
           </div>
         )}
 
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
-          <Outlet context={status} />
+        <main className={cx("w-full flex-1", immersive ? "min-w-0" : "mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8")}>
+          <Suspense fallback={<div className="flex min-h-[40vh] items-center justify-center"><Spinner /></div>}>
+            <Outlet context={status} />
+          </Suspense>
         </main>
 
-        <footer className="border-t border-slate-200 bg-white px-4 py-4 text-center text-xs text-slate-500">
+        {!immersive && <footer className="border-t border-slate-200 bg-white px-4 py-4 text-center text-xs text-slate-500">
           <ClipboardList className="mr-1 inline h-3.5 w-3.5" aria-hidden />
           BookMyCare is an educational prototype. It does not provide medical diagnoses. In an emergency call {status?.emergency_number ?? "your local emergency number"}.
-        </footer>
+        </footer>}
       </div>
     </div>
   );

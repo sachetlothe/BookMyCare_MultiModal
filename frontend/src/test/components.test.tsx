@@ -85,6 +85,16 @@ describe("LoginPage", () => {
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Incorrect email or password"));
   });
 
+  it("lets the user show and hide the password", async () => {
+    render(<MemoryRouter><AuthProvider><LoginPage /></AuthProvider></MemoryRouter>);
+    const pw = screen.getByLabelText("Password");
+    expect(pw).toHaveAttribute("type", "password");
+    await userEvent.click(screen.getByRole("button", { name: "Show password" }));
+    expect(pw).toHaveAttribute("type", "text");
+    await userEvent.click(screen.getByRole("button", { name: "Hide password" }));
+    expect(pw).toHaveAttribute("type", "password");
+  });
+
   it("reports a friendly message when the backend is unreachable", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => { throw new TypeError("Failed to fetch"); }));
     render(<MemoryRouter><AuthProvider><LoginPage /></AuthProvider></MemoryRouter>);

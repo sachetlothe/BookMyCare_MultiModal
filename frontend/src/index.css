@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Plus Jakarta Sans Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --color-brand-50: #f0fdfa;
   --color-brand-100: #ccfbf1;
   --color-brand-200: #99f6e4;
@@ -14,8 +15,49 @@
 
 html, body, #root { height: 100%; }
 body { @apply text-slate-800 antialiased; }
+h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.015em; }
 
 :focus-visible { outline: 2px solid var(--color-brand-600); outline-offset: 2px; }
+
+@keyframes bmc-float {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--tilt, 0deg)); }
+  50% { transform: translate3d(0, -14px, 0) rotate(calc(var(--tilt, 0deg) + 8deg)); }
+}
+@keyframes bmc-bob {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -8px, 0); }
+}
+@keyframes bmc-pulse-ring {
+  0% { transform: scale(0.85); opacity: 0.7; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+@keyframes bmc-scan {
+  0% { transform: translate3d(0, -10%, 0); opacity: 0; }
+  10%, 90% { opacity: 1; }
+  100% { transform: translate3d(0, 1000%, 0); opacity: 0; }
+}
+@keyframes bmc-drift {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  20%, 80% { opacity: 1; }
+  100% { transform: translate3d(var(--dx, 120px), var(--dy, 0px), 0); opacity: 0; }
+}
+@keyframes bmc-aurora {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(8%, 6%, 0) scale(1.12); }
+}
+.bmc-aurora { animation: bmc-aurora 16s ease-in-out infinite; }
+.bmc-scan { animation: bmc-scan 2.6s ease-in-out infinite; }
+.bmc-drift { animation: bmc-drift 2.4s ease-in-out infinite; }
+.bmc-float { animation: bmc-float 7s ease-in-out infinite; }
+.bmc-bob { animation: bmc-bob 4s ease-in-out infinite; }
+.bmc-pulse-ring { animation: bmc-pulse-ring 2.2s ease-out infinite; }
+.bmc-perspective { perspective: 1200px; }
+.bmc-preserve { transform-style: preserve-3d; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bmc-float, .bmc-bob, .bmc-pulse-ring, .bmc-scan, .bmc-drift, .bmc-aurora { animation: none; }
+  html { scroll-behavior: auto !important; }
+}
 
 @media print {
   .no-print { display: none !important; }

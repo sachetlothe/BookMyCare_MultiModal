@@ -170,7 +170,7 @@ def gather_evidence(db: Session, conditions: list[dict], symptom_labels: list[st
 
 def build_context(*, urgency: str, red_flags: list[dict], symptom_labels: list[str], conditions: list[dict],
                   labs: list[dict], pctx: dict, sources: list[dict], cond_evidence: dict[str, list[str]],
-                  abnormal_labs: list[dict]) -> dict:
+                  abnormal_labs: list[dict], trends: list[dict] | None = None) -> dict:
     return {
         "urgency": urgency,  # fixed by safety rules; the model may not change it
         "red_flags": [f["title"] for f in red_flags],
@@ -188,6 +188,11 @@ def build_context(*, urgency: str, red_flags: list[dict], symptom_labels: list[s
         ],
         "labs": [{k: l.get(k) for k in ("test", "value", "unit", "ref_low", "ref_high", "status")} for l in labs[:30]],
         "abnormal_lab_count": len(abnormal_labs),
+        # Changes over time from the patient's earlier reports (rule-based, already computed).
+        "lab_trends": [
+            {"test": t["name"], "assessment": t["assessment"], "summary": t["summary"], "flags": [f["text"] for f in t["flags"]]}
+            for t in (trends or [])[:10]
+        ],
         "patient": {
             "age": pctx.get("age"), "sex": pctx.get("sex"), "is_pregnant": pctx.get("is_pregnant"),
             "chronic_conditions": pctx.get("chronic_conditions", []),

@@ -12,11 +12,12 @@ import math
 from functools import lru_cache
 from pathlib import Path
 
+from app.services import specialty
 from app.services.lab_parser import SPEC_BY_KEY
 from app.services.symptoms import LABELS
 
 DATA = Path(__file__).resolve().parents[1] / "data"
-ENGINE_VERSION = "rules-1.0"
+ENGINE_VERSION = "rules-1.1"  # 1.1: lab-history trends as evidence
 
 
 @lru_cache
@@ -28,6 +29,9 @@ def load_conditions() -> list[dict]:
 def condition_by_key(key: str) -> dict | None:
     return next((c for c in load_conditions() if c["key"] == key), None)
 
+
+# Share of a lab rule's weight added for a trend in the expected direction (hand-set, not validated).
+TREND_WEIGHTS = {"worsening": 0.4, "approaching_limit": 0.25, "persistent": 0.3, "cap": 0.6, "improving": 0.2}
 
 # Keyword map for (unverified) AI image observations -> condition evidence.
 IMAGE_FINDING_MAP: dict[str, tuple[str, float]] = {
@@ -103,8 +107,10 @@ def score_conditions(
     duration_days: int | None = None,
     image_findings: list[str] | None = None,
     top_n: int = 5,
+    trends: list[dict] | None = None,
 ) -> list[dict]:
     lab_by_key = {l["key"]: l for l in labs}
+    trend_by_key = {t["key"]: t for t in trends or []}
     sym_set = set(symptom_keys)
     results = []
     for cond in load_conditions():
@@ -134,6 +140,30 @@ def score_conditions(
                 lab_pts += w
                 factors.append({"type": "lab", "label": f"{name} {lab['value']} {lab.get('unit') or ''} is in the normal range".replace("  ", " "), "points": round(w, 2), "direction": "against"})
 
+        # Lab history (lab_results over time): worsening, persistent or approaching-limit trends in the
+        # direction this condition expects add a little evidence; improving trends count against.
+        trend_pts = 0.0
+        for rule in cond["labs"]:
+            t = trend_by_key.get(rule["key"])
+            if not t or t["toward"] != rule["status"]:
+                continue
+            w = 0.0
+            if t["assessment"] == "worsening":
+                w += TREND_WEIGHTS["worsening"]
+            elif t["assessment"] == "approaching_limit":
+                w += TREND_WEIGHTS["approaching_limit"]
+            if t["persistent_count"] >= 2:
+                w += TREND_WEIGHTS["persistent"]
+            if w:
+                w = round(min(w, TREND_WEIGHTS["cap"]) * rule["weight"], 2)
+                trend_pts += w
+                label = t["summary"] if t["assessment"] in ("worsening", "approaching_limit") else t.get("persistent_text") or t["summary"]
+                factors.append({"type": "trend", "label": f"Trend: {label}", "points": w, "direction": "supports"})
+            elif t["assessment"] == "improving":
+                w = round(-TREND_WEIGHTS["improving"] * rule["weight"], 2)
+                trend_pts += w
+                factors.append({"type": "trend", "label": f"Improving trend: {t['summary']}", "points": w, "direction": "against"})
+
         img_pts = 0.0
         for finding in image_findings or []:
             for kw, (ckey, w) in IMAGE_FINDING_MAP.items():
@@ -142,7 +172,7 @@ def score_conditions(
                     factors.append({"type": "image", "label": f"AI image observation (unverified): {finding[:80]}", "points": w, "direction": "supports"})
                     break
 
-        evidence = sym_pts + max(lab_pts, 0) + img_pts
+        evidence = sym_pts + max(lab_pts, 0) + img_pts + max(trend_pts, 0)
         if evidence <= 0:
             continue
 
@@ -164,11 +194,11 @@ def score_conditions(
                 factors.append({"type": "duration", "label": f"Symptoms for {duration_days} days is longer than typical for this condition", "points": 0, "direction": "against"})
 
         key_syms = cond.get("key_symptoms") or []
-        if key_syms and not (sym_set & set(key_syms)) and lab_pts <= 0 and img_pts <= 0:
+        if key_syms and not (sym_set & set(key_syms)) and lab_pts <= 0 and img_pts <= 0 and trend_pts <= 0:
             multiplier *= 0.5
             factors.append({"type": "missing", "label": "Typical key symptoms not reported: " + ", ".join(LABELS.get(k, k) for k in key_syms), "points": 0, "direction": "against"})
 
-        total = (sym_pts + lab_pts + img_pts + risk_pts + dur_pts) * multiplier
+        total = (sym_pts + lab_pts + img_pts + trend_pts + risk_pts + dur_pts) * multiplier
         if total <= 0:
             continue
         # Two components: (1) saturation - how much evidence in absolute terms;
@@ -220,7 +250,8 @@ def score_conditions(
             "factors": factors,
             "not_reported": missing_supportive,
             "suggested_tests": cond.get("suggested_tests", []),
-            "specialist": cond.get("specialist"),
+            "specialist": specialty.label_for_condition(cond["key"]),
+            "specialties": specialty.specialties_for_condition(cond["key"]),
             "notes": notes,
         })
     results.sort(key=lambda r: -r["match_score"])

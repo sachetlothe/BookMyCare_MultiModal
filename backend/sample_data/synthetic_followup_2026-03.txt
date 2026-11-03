@@ -1,0 +1,24 @@
+SYNTHETIC SAMPLE REPORT - NOT A REAL PATIENT - FOR SOFTWARE TESTING ONLY
+
+Patient: Demo Patient (synthetic)
+Age/Sex: 52 / Female
+Lab: BookMyCare Demo Laboratory
+Report date: 2026-03-12
+
+COMPLETE BLOOD COUNT
+Hemoglobin: 11.9 g/dL      (12.0 - 15.5)
+
+DIABETES PANEL
+Fasting Blood Sugar: 118 mg/dL      (70 - 99)
+HbA1c: 6.6 %          (< 5.7)
+
+LIPID PROFILE
+Total Cholesterol: 221 mg/dL      (< 200)
+LDL Cholesterol: 146 mg/dL      (< 130)
+HDL Cholesterol: 40 mg/dL       (> 50)
+Triglycerides: 178 mg/dL      (< 150)
+
+OTHER
+Serum Creatinine: 0.85 mg/dL      (0.5 - 1.1)
+Vitamin D (25-OH): 20 ng/mL       (30 - 100)
+Blood Pressure: 138/88 mmHg

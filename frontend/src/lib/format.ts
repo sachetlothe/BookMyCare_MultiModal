@@ -55,3 +55,14 @@ export function confidenceClass(c: "low" | "moderate" | "high"): string {
 export function splitList(s: string): string[] {
   return s.split(/[,\n]/).map((x) => x.trim()).filter(Boolean);
 }
+
+/** Plain-English description of a report's text-extraction status (e.g. "the text could not be read"). */
+export function extractionNote(status: string): string {
+  switch (status) {
+    case "failed": return "the text could not be read";
+    case "partial": return "only part of the text could be read";
+    case "skipped": return "text reading was skipped";
+    case "pending": return "text reading has not finished yet";
+    default: return `text reading status: ${status}`;
+  }
+}

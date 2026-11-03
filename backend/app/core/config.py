@@ -24,11 +24,33 @@ class Settings(BaseSettings):
     upload_dir: Path = BACKEND_DIR / "uploads"
     max_upload_mb: int = 15
 
+    # Uploaded files are always encrypted (AES-256-GCM) before they are stored.
+    # 32 random bytes, base64. Without it a development key file is created in backend/.keys/.
+    file_encryption_key: str = ""
+    storage_backend: str = "local"  # local (UPLOAD_DIR) | supabase (private Storage bucket)
+    supabase_url: str = ""  # https://<project-ref>.supabase.co
+    supabase_secret_key: str = ""  # server-only secret / service_role key; never put it in the frontend
+    supabase_storage_bucket: str = "medical-files"
+    # Patients can open/download their OWN originals (decrypted with their own key, which only
+    # their sign-in unlocks). Set false to hide originals from patients too.
+    allow_file_download: bool = True
+
     # Security. A random default is generated per process if unset; set a real
     # value in .env so tokens survive restarts.
     jwt_secret: str = Field(default="")
     jwt_algorithm: str = "HS256"
     access_token_minutes: int = 60 * 12
+
+    # Failed-login limits inside a sliding window (429 + Retry-After once reached).
+    login_max_failures: int = 5  # per email + client IP
+    login_max_failures_per_ip: int = 20  # per client IP across all emails
+    login_window_seconds: int = 15 * 60
+
+    # Send Strict-Transport-Security. Enable only when the API is served over HTTPS.
+    hsts_enabled: bool = False
+
+    # Team statistics: groups smaller than this are shown as "<N" so no one can be singled out.
+    stats_min_count: int = 5
 
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
@@ -53,12 +75,34 @@ class Settings(BaseSettings):
     emergency_number: str = "112"
     crisis_line: str = "Tele-MANAS 14416 (India, 24x7 mental health helpline)"
 
+    # Nearby facility search (OpenStreetMap). Only a rounded location (~1 km) is sent, never health data.
+    facility_search_enabled: bool = True
+    # Data sources tried in order. Nominatim answers in about a second; public Overpass servers are often
+    # at capacity (measured 2026-11-03: 3 of 4 timed out, the 4th took ~23 s), so it is the fallback.
+    facility_sources: str = "nominatim,overpass"
+    # Overpass servers, tried in this order (comma-separated).
+    overpass_urls: str = "https://overpass-api.de/api/interpreter,https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+    nominatim_url: str = "https://nominatim.openstreetmap.org/search"
+    # OSM usage policies require an identifying User-Agent; add a contact address for a public deployment.
+    osm_user_agent: str = "BookMyCare/0.1 (educational prototype)"
+    geocode_country_codes: str = "in"  # limit place-name search to these ISO countries (comma-separated; empty = worldwide)
+    facility_max_radius_km: float = 25.0
+    facility_searches_per_10min: int = 20  # per user; cached answers do not count
+
     # OCR
     tesseract_cmd: str = ""  # e.g. C:\\Program Files\\Tesseract-OCR\\tesseract.exe
 
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def facility_source_list(self) -> list[str]:
+        return [x.strip().lower() for x in self.facility_sources.split(",") if x.strip()]
+
+    @property
+    def overpass_url_list(self) -> list[str]:
+        return [u.strip() for u in self.overpass_urls.split(",") if u.strip()]
 
     @property
     def provider_order(self) -> list[str]:

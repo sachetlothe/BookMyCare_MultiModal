@@ -252,3 +252,14 @@ def parse_lab_values(text: str | None, sex: str | None = None) -> list[dict]:
 
 def abnormal(values: list[dict]) -> list[dict]:
     return [v for v in values if v.get("status") != "normal"]
+
+
+def reclassify(values: list[dict] | None, sex: str | None = None) -> list[dict]:
+    """Re-apply ranges and status to stored lab values (e.g. after the patient's sex is set),
+    without needing the original report text."""
+    out = []
+    for v in values or []:
+        spec = SPEC_BY_KEY.get(v.get("key"))
+        if spec and isinstance(v.get("value"), (int, float)):
+            out.append(_make(spec, float(v["value"]), v.get("raw") or "", sex))
+    return out

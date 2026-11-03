@@ -1,0 +1,56 @@
+{
+  "_note": "Hand-written, rule-based mapping from screening results to the type of doctor to consult. It is general care-navigation guidance for an educational prototype, NOT clinically validated, and never replaces a clinician's referral. A general physician is always the first-line option except in emergencies.",
+  "version": "specialty-rules-v1",
+  "specialties": [
+    {"code": "emergency", "name": "Emergency department", "doctor": "Emergency department", "what": "Immediate care for serious or life-threatening symptoms.", "osm": []},
+    {"code": "general_physician", "name": "General medicine", "doctor": "General physician", "what": "First point of contact for most health concerns; can examine you, order tests and refer you to a specialist.", "osm": ["general", "family_medicine", "internal"]},
+    {"code": "endocrinology", "name": "Endocrinology", "doctor": "Endocrinologist", "what": "Hormone and metabolic conditions such as diabetes and thyroid disorders.", "osm": ["endocrinology", "diabetology"]},
+    {"code": "cardiology", "name": "Cardiology", "doctor": "Cardiologist", "what": "Heart and blood-vessel conditions, including high blood pressure and cholesterol-related risk.", "osm": ["cardiology"]},
+    {"code": "pulmonology", "name": "Pulmonology", "doctor": "Pulmonologist (chest physician)", "what": "Lung and breathing conditions such as asthma, pneumonia and tuberculosis.", "osm": ["pulmonology"]},
+    {"code": "nephrology", "name": "Nephrology", "doctor": "Nephrologist", "what": "Kidney conditions.", "osm": ["nephrology"]},
+    {"code": "gastroenterology", "name": "Gastroenterology / hepatology", "doctor": "Gastroenterologist or hepatologist", "what": "Stomach, bowel and liver conditions.", "osm": ["gastroenterology", "hepatology"]},
+    {"code": "haematology", "name": "Haematology", "doctor": "Haematologist", "what": "Blood conditions such as persistent anaemia or abnormal blood counts.", "osm": ["haematology"]},
+    {"code": "infectious_disease", "name": "Infectious diseases", "doctor": "Infectious disease specialist", "what": "Complicated or persistent infections.", "osm": ["infectious_diseases"]},
+    {"code": "urology", "name": "Urology", "doctor": "Urologist", "what": "Urinary tract and bladder conditions, including recurrent infections.", "osm": ["urology"]},
+    {"code": "neurology", "name": "Neurology", "doctor": "Neurologist", "what": "Brain and nerve conditions, including frequent or unusual headaches.", "osm": ["neurology"]},
+    {"code": "psychiatry", "name": "Mental health", "doctor": "Psychiatrist, psychologist or counsellor", "what": "Mood, anxiety and other mental-health concerns.", "osm": ["psychiatry", "psychology"]}
+  ],
+  "conditions": {
+    "common_cold": {"specialists": [], "when": "if symptoms last more than 10 days or get worse"},
+    "influenza": {"specialists": [], "when": null},
+    "covid19": {"specialists": [], "when": null},
+    "dengue": {"specialists": [], "when": "go to a hospital at once if warning signs appear"},
+    "malaria": {"specialists": ["infectious_disease"], "when": "if not improving or complicated"},
+    "typhoid": {"specialists": ["infectious_disease"], "when": "if not improving or complicated"},
+    "gastroenteritis": {"specialists": ["gastroenterology"], "when": "if symptoms persist beyond two weeks"},
+    "urinary_tract_infection": {"specialists": ["urology"], "when": "if infections keep coming back"},
+    "type_2_diabetes": {"specialists": ["endocrinology"], "when": "if blood sugar stays high or is hard to control"},
+    "hypertension": {"specialists": ["cardiology"], "when": "if blood pressure stays high or heart symptoms appear"},
+    "iron_deficiency_anaemia": {"specialists": ["haematology"], "when": "if anaemia persists or the cause is unclear"},
+    "hypothyroidism": {"specialists": ["endocrinology"], "when": "if thyroid results stay abnormal"},
+    "hyperlipidaemia": {"specialists": ["cardiology"], "when": "if cholesterol stays high or you have other heart risk factors"},
+    "asthma": {"specialists": ["pulmonology"], "when": "if symptoms are frequent or not controlled"},
+    "pneumonia": {"specialists": ["pulmonology"], "when": "if not improving or breathing gets worse"},
+    "tuberculosis": {"specialists": ["pulmonology"], "when": "TB testing and free treatment are also available at government TB / DOTS centres"},
+    "migraine": {"specialists": ["neurology"], "when": "if headaches are frequent, severe or unusual for you"},
+    "chronic_kidney_disease": {"specialists": ["nephrology"], "when": "if kidney results stay abnormal"},
+    "liver_dysfunction": {"specialists": ["gastroenterology"], "when": "if liver results stay abnormal"},
+    "vitamin_d_deficiency": {"specialists": [], "when": null},
+    "vitamin_b12_deficiency": {"specialists": ["haematology"], "when": "if levels stay low or there are nerve symptoms"},
+    "depression": {"specialists": ["psychiatry"], "when": "talking to a professional helps; you do not need a referral to start"}
+  },
+  "lab_categories": {
+    "Diabetes": "endocrinology",
+    "Thyroid": "endocrinology",
+    "Lipids": "cardiology",
+    "Kidney": "nephrology",
+    "Liver": "gastroenterology",
+    "Blood count": "haematology"
+  },
+  "lab_tests": {
+    "bp_systolic": "cardiology",
+    "bp_diastolic": "cardiology",
+    "heart_rate": "cardiology",
+    "spo2": "pulmonology"
+  }
+}

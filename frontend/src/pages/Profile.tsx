@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useLocation } from "react-router-dom";
+import SecurityCard from "../components/SecurityCard";
+import SupportAccessCard from "../components/SupportAccessCard";
 import { Alert, Button, Card, Checkbox, Field, Input, PageHeader, Select, Spinner, Textarea } from "../components/ui";
 import { api } from "../lib/api";
 import { splitList } from "../lib/format";
@@ -126,6 +128,7 @@ export default function ProfilePage() {
         {msg && <Alert kind={msg.kind}>{msg.text}</Alert>}
         <div className="flex justify-end"><Button type="submit" loading={saving}>Save profile</Button></div>
       </form>
+      <div className="mt-6 space-y-6"><SecurityCard /><SupportAccessCard /></div>
     </div>
   );
 }

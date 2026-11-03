@@ -19,17 +19,25 @@ def verify_password(password: str, hashed: str) -> bool:
         return False
 
 
-def create_access_token(subject: str | int) -> str:
+def create_access_token(subject: str | int, file_key_sealed: str | None = None, session_version: int = 0) -> str:
+    """``file_key_sealed``: the patient's file key, already encrypted for the token (see patient_keys).
+    ``session_version``: must match users.session_version, so password changes end older sessions."""
     s = get_settings()
     now = datetime.now(timezone.utc)
-    payload = {"sub": str(subject), "iat": now, "exp": now + timedelta(minutes=s.access_token_minutes)}
+    payload = {"sub": str(subject), "iat": now, "exp": now + timedelta(minutes=s.access_token_minutes), "sv": session_version}
+    if file_key_sealed:
+        payload["fk"] = file_key_sealed
     return jwt.encode(payload, s.jwt_secret, algorithm=s.jwt_algorithm)
 
 
-def decode_access_token(token: str) -> str | None:
+def decode_token_payload(token: str) -> dict | None:
     s = get_settings()
     try:
-        payload = jwt.decode(token, s.jwt_secret, algorithms=[s.jwt_algorithm])
+        return jwt.decode(token, s.jwt_secret, algorithms=[s.jwt_algorithm])
     except jwt.PyJWTError:
         return None
-    return payload.get("sub")
+
+
+def decode_access_token(token: str) -> str | None:
+    payload = decode_token_payload(token)
+    return payload.get("sub") if payload else None

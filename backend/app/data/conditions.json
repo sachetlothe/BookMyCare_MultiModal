@@ -6,7 +6,7 @@
       "description": "A mild viral infection of the nose and throat that usually settles within 7-10 days.",
       "symptoms": {"runny_nose": 3, "sneezing": 2.5, "sore_throat": 2, "cough": 1.5, "headache": 0.5, "fatigue": 0.5, "fever": 0.5},
       "key_symptoms": ["runny_nose", "sneezing"], "labs": [], "risk_factors": [], "scale": 4.5, "max_days": 14,
-      "suggested_tests": [], "specialist": "General physician (if not improving)",
+      "suggested_tests": [],
       "self_care": ["Rest and drink plenty of fluids", "Warm saline gargles or honey-lemon drinks may ease a sore throat", "Wash hands often to avoid spreading the infection"],
       "see_doctor_if": ["Symptoms last more than 10 days or get worse after improving", "High fever, breathing difficulty or chest pain develops"],
       "topics": ["respiratory_infection"]
@@ -17,7 +17,7 @@
       "symptoms": {"fever": 2.5, "high_fever": 1, "body_aches": 2.5, "chills": 1.5, "cough": 2, "dry_cough": 0.5, "headache": 1.5, "fatigue": 1.5, "sore_throat": 1, "runny_nose": 0.5},
       "key_symptoms": ["fever", "body_aches"], "labs": [{"key": "wbc", "status": "low", "weight": 0.5}],
       "risk_factors": [{"factor": "age_over_65", "weight": 0.3}, {"factor": "pregnant", "weight": 0.3}], "scale": 6, "max_days": 21,
-      "suggested_tests": ["Influenza rapid antigen / PCR test (if advised)"], "specialist": "General physician",
+      "suggested_tests": ["Influenza rapid antigen / PCR test (if advised)"],
       "self_care": ["Rest at home and avoid contact with others while feverish", "Drink plenty of fluids", "Monitor temperature and breathing"],
       "see_doctor_if": ["You are pregnant, over 65, or have a chronic condition (higher risk of complications)", "Breathing difficulty, chest pain, confusion or symptoms that improve then return worse"],
       "topics": ["influenza"]
@@ -28,7 +28,7 @@
       "symptoms": {"fever": 1.5, "cough": 1.5, "dry_cough": 0.5, "loss_of_taste_smell": 3.5, "fatigue": 1, "sore_throat": 1, "shortness_of_breath": 1.5, "body_aches": 1, "headache": 0.5, "diarrhea": 0.5},
       "key_symptoms": ["loss_of_taste_smell"], "labs": [{"key": "spo2", "status": "low", "weight": 1}],
       "risk_factors": [{"factor": "age_over_65", "weight": 0.3}], "scale": 6, "max_days": 28,
-      "suggested_tests": ["COVID-19 rapid antigen or RT-PCR test"], "specialist": "General physician",
+      "suggested_tests": ["COVID-19 rapid antigen or RT-PCR test"],
       "self_care": ["Test if available and isolate while symptomatic", "Rest, fluids and monitor symptoms", "If you have a pulse oximeter, check oxygen saturation"],
       "see_doctor_if": ["Oxygen saturation below 94% or breathing difficulty", "Persistent chest pain, confusion or bluish lips"],
       "topics": ["covid19"]
@@ -40,7 +40,7 @@
       "key_symptoms": ["fever", "eye_pain", "joint_pain"],
       "labs": [{"key": "platelets", "status": "low", "weight": 3}, {"key": "wbc", "status": "low", "weight": 1.5}],
       "risk_factors": [], "scale": 7, "max_days": 14,
-      "suggested_tests": ["Complete blood count with platelet count", "Dengue NS1 antigen / IgM antibody test"], "specialist": "General physician / infectious disease",
+      "suggested_tests": ["Complete blood count with platelet count", "Dengue NS1 antigen / IgM antibody test"],
       "self_care": ["Rest and drink plenty of fluids (ORS, water, soups)", "Avoid aspirin and ibuprofen-type pain killers unless a doctor advises otherwise - they can increase bleeding risk", "Use mosquito protection to avoid spreading infection"],
       "see_doctor_if": ["Severe abdominal pain, persistent vomiting, bleeding gums/nose, blood in vomit or stool, restlessness - these are warning signs needing emergency care", "Platelet count is falling"],
       "topics": ["dengue"]
@@ -52,7 +52,7 @@
       "key_symptoms": ["fever", "chills"],
       "labs": [{"key": "platelets", "status": "low", "weight": 1.5}, {"key": "hemoglobin", "status": "low", "weight": 1}, {"key": "bilirubin_total", "status": "high", "weight": 0.5}],
       "risk_factors": [], "scale": 7, "max_days": 30,
-      "suggested_tests": ["Malaria rapid diagnostic test or blood smear", "Complete blood count"], "specialist": "General physician",
+      "suggested_tests": ["Malaria rapid diagnostic test or blood smear", "Complete blood count"],
       "self_care": ["Get tested promptly - malaria can worsen within a day", "Rest and stay hydrated", "Use bed nets and repellents"],
       "see_doctor_if": ["Any fever with chills in an area where malaria occurs - get tested the same day", "Confusion, drowsiness, breathing difficulty or dark urine"],
       "topics": ["malaria"]
@@ -63,7 +63,7 @@
       "symptoms": {"fever": 2.5, "high_fever": 1, "abdominal_pain": 2, "headache": 1.5, "fatigue": 1.5, "loss_of_appetite": 1.5, "constipation": 1.5, "diarrhea": 1, "nausea": 0.5, "rash": 0.5},
       "key_symptoms": ["fever", "abdominal_pain"], "labs": [{"key": "wbc", "status": "low", "weight": 1}, {"key": "alt", "status": "high", "weight": 0.5}],
       "risk_factors": [], "scale": 7.5, "min_days": 5, "duration_weight": 1.5, "max_days": 40,
-      "suggested_tests": ["Blood culture (preferred)", "Complete blood count"], "specialist": "General physician",
+      "suggested_tests": ["Blood culture (preferred)", "Complete blood count"],
       "self_care": ["Drink safe, boiled or treated water", "Eat freshly cooked food and wash hands", "Do not self-medicate with leftover antibiotics"],
       "see_doctor_if": ["Fever lasting more than 3 days", "Severe abdominal pain, blood in stool or confusion"],
       "topics": ["typhoid"]
@@ -74,7 +74,7 @@
       "symptoms": {"diarrhea": 3.5, "vomiting": 2.5, "nausea": 2, "abdominal_pain": 2, "fever": 0.5, "loss_of_appetite": 0.5},
       "key_symptoms": ["diarrhea", "vomiting"], "labs": [{"key": "sodium", "status": "low", "weight": 0.5}, {"key": "potassium", "status": "low", "weight": 0.5}],
       "risk_factors": [], "scale": 5.5, "max_days": 14,
-      "suggested_tests": ["Usually none; stool test if prolonged or bloody"], "specialist": "General physician",
+      "suggested_tests": ["Usually none; stool test if prolonged or bloody"],
       "self_care": ["Sip oral rehydration solution (ORS) frequently", "Eat light food as tolerated", "Wash hands thoroughly to avoid spreading infection"],
       "see_doctor_if": ["Signs of dehydration: very little urine, dizziness on standing, dry mouth", "Blood in stool, high fever, or symptoms beyond 3 days"],
       "topics": ["gastroenteritis"]
@@ -85,7 +85,7 @@
       "symptoms": {"burning_urination": 4, "frequent_urination": 2.5, "abdominal_pain": 1, "fever": 0.5, "flank_pain": 1, "dark_urine": 0.5},
       "key_symptoms": ["burning_urination"], "labs": [{"key": "wbc", "status": "high", "weight": 0.5}],
       "risk_factors": [{"factor": "sex_female", "weight": 0.5}, {"factor": "pregnant", "weight": 0.3}], "scale": 5, "max_days": 30,
-      "suggested_tests": ["Urine routine & microscopy", "Urine culture"], "specialist": "General physician / urologist",
+      "suggested_tests": ["Urine routine & microscopy", "Urine culture"],
       "self_care": ["Drink plenty of water", "Do not delay urination"],
       "see_doctor_if": ["Burning urination - a urine test can confirm infection and guide treatment", "Fever, back/side pain or vomiting (possible kidney infection) - seek care promptly", "You are pregnant"],
       "topics": ["urinary_tract_infection"]
@@ -98,7 +98,7 @@
       "labs": [{"key": "hba1c", "status": "high", "weight": 4}, {"key": "glucose_fasting", "status": "high", "weight": 3.5}, {"key": "glucose_random", "status": "high", "weight": 2.5}, {"key": "triglycerides", "status": "high", "weight": 0.5}],
       "risk_factors": [{"factor": "bmi_over_30", "weight": 1}, {"factor": "bmi_over_25", "weight": 0.5}, {"factor": "age_over_45", "weight": 0.5}, {"factor": "low_activity", "weight": 0.5}, {"factor": "family:diabetes", "weight": 0.5}],
       "scale": 6, "requires_lab_confirmation": true,
-      "suggested_tests": ["HbA1c", "Fasting plasma glucose", "Lipid profile", "Kidney function (creatinine, urine albumin)"], "specialist": "General physician / endocrinologist",
+      "suggested_tests": ["HbA1c", "Fasting plasma glucose", "Lipid profile", "Kidney function (creatinine, urine albumin)"],
       "self_care": ["Choose whole grains, vegetables and pulses; limit sugary drinks and refined carbohydrates", "Aim for at least 150 minutes of moderate activity per week", "If overweight, even modest weight loss can improve blood sugar"],
       "see_doctor_if": ["Blood sugar results are above the normal range - a doctor should confirm with repeat testing", "Very high thirst and urination with weight loss, vomiting or drowsiness - seek care promptly"],
       "topics": ["type_2_diabetes"]
@@ -111,7 +111,7 @@
       "labs": [{"key": "bp_systolic", "status": "high", "weight": 4}, {"key": "bp_diastolic", "status": "high", "weight": 3}],
       "risk_factors": [{"factor": "bmi_over_30", "weight": 0.7}, {"factor": "age_over_45", "weight": 0.5}, {"factor": "smoker", "weight": 0.5}, {"factor": "alcohol_regular", "weight": 0.5}, {"factor": "low_activity", "weight": 0.3}, {"factor": "family:hypertension", "weight": 0.5}],
       "scale": 5, "requires_lab_confirmation": true,
-      "suggested_tests": ["Repeat blood pressure readings on different days (or home/ambulatory monitoring)", "Kidney function", "Lipid profile", "ECG if advised"], "specialist": "General physician / cardiologist",
+      "suggested_tests": ["Repeat blood pressure readings on different days (or home/ambulatory monitoring)", "Kidney function", "Lipid profile", "ECG if advised"],
       "self_care": ["Reduce salt intake (WHO advises < 5 g per day)", "Be physically active and keep a healthy weight", "Limit alcohol and avoid tobacco", "Measure blood pressure at home and keep a log"],
       "see_doctor_if": ["Readings are repeatedly 130/80 mmHg or above", "Reading of 180/120 mmHg or higher, especially with chest pain, breathlessness, weakness or vision changes - emergency"],
       "topics": ["hypertension"]
@@ -124,7 +124,7 @@
       "labs": [{"key": "hemoglobin", "status": "low", "weight": 4}, {"key": "ferritin", "status": "low", "weight": 2.5}],
       "risk_factors": [{"factor": "sex_female", "weight": 0.5}, {"factor": "pregnant", "weight": 0.5}],
       "scale": 5.5, "requires_lab_confirmation": true,
-      "suggested_tests": ["Complete blood count", "Serum ferritin / iron studies", "Vitamin B12 and folate"], "specialist": "General physician / haematologist",
+      "suggested_tests": ["Complete blood count", "Serum ferritin / iron studies", "Vitamin B12 and folate"],
       "self_care": ["Include iron-rich foods (green leafy vegetables, legumes, jaggery, eggs, meat) with vitamin C sources", "Avoid tea or coffee with meals as they reduce iron absorption", "Take supplements only as advised by a doctor"],
       "see_doctor_if": ["Haemoglobin is below the normal range - the cause should be investigated", "Breathlessness at rest, chest pain, fainting or any blood loss (e.g. black stools, heavy periods)"],
       "topics": ["iron_deficiency_anaemia"]
@@ -137,7 +137,7 @@
       "labs": [{"key": "tsh", "status": "high", "weight": 4}],
       "risk_factors": [{"factor": "sex_female", "weight": 0.5}],
       "scale": 5.5, "requires_lab_confirmation": true,
-      "suggested_tests": ["TSH", "Free T4", "Thyroid antibodies (if advised)"], "specialist": "Endocrinologist",
+      "suggested_tests": ["TSH", "Free T4", "Thyroid antibodies (if advised)"],
       "self_care": ["Keep a symptom diary to discuss with your doctor", "Maintain a balanced diet and regular activity"],
       "see_doctor_if": ["TSH outside the reference range - a doctor should confirm and decide on treatment", "You are pregnant or planning pregnancy"],
       "topics": []
@@ -150,7 +150,7 @@
       "labs": [{"key": "ldl", "status": "high", "weight": 3.5}, {"key": "total_cholesterol", "status": "high", "weight": 2.5}, {"key": "triglycerides", "status": "high", "weight": 2}, {"key": "hdl", "status": "low", "weight": 1.5}],
       "risk_factors": [{"factor": "bmi_over_30", "weight": 0.5}, {"factor": "smoker", "weight": 0.3}, {"factor": "low_activity", "weight": 0.3}],
       "scale": 4.5, "requires_lab_confirmation": true,
-      "suggested_tests": ["Fasting lipid profile", "Blood sugar / HbA1c", "Cardiovascular risk assessment"], "specialist": "General physician / cardiologist",
+      "suggested_tests": ["Fasting lipid profile", "Blood sugar / HbA1c", "Cardiovascular risk assessment"],
       "self_care": ["Limit saturated and trans fats (fried foods, butter, ghee, processed meats)", "Increase fibre: oats, pulses, vegetables, fruit", "Exercise regularly and avoid tobacco"],
       "see_doctor_if": ["Lipids above target - your doctor can estimate overall heart risk and advise treatment"],
       "topics": ["hyperlipidaemia"]
@@ -162,7 +162,7 @@
       "key_symptoms": ["wheezing"], "labs": [{"key": "spo2", "status": "low", "weight": 0.5}],
       "risk_factors": [{"factor": "smoker", "weight": 0.3}, {"factor": "chronic:allergy", "weight": 0.5}],
       "scale": 5.5,
-      "suggested_tests": ["Spirometry with bronchodilator test", "Peak flow monitoring"], "specialist": "Pulmonologist",
+      "suggested_tests": ["Spirometry with bronchodilator test", "Peak flow monitoring"],
       "self_care": ["Avoid known triggers such as smoke, dust and cold air", "If prescribed an inhaler, keep it with you and use as directed", "Have a written asthma action plan"],
       "see_doctor_if": ["Recurrent wheeze or night-time cough", "Severe breathlessness, difficulty speaking, or bluish lips - emergency"],
       "topics": ["asthma"]
@@ -175,7 +175,7 @@
       "labs": [{"key": "wbc", "status": "high", "weight": 1.5}, {"key": "crp", "status": "high", "weight": 1.5}, {"key": "spo2", "status": "low", "weight": 2}],
       "risk_factors": [{"factor": "age_over_65", "weight": 0.5}, {"factor": "smoker", "weight": 0.5}],
       "scale": 7,
-      "suggested_tests": ["Chest X-ray", "Complete blood count, CRP", "Pulse oximetry"], "specialist": "General physician / pulmonologist",
+      "suggested_tests": ["Chest X-ray", "Complete blood count, CRP", "Pulse oximetry"],
       "self_care": ["Rest and fluids while awaiting medical review", "Do not take leftover antibiotics without prescription"],
       "see_doctor_if": ["Cough with fever and breathlessness - see a doctor promptly", "Breathing difficulty, confusion, or oxygen saturation below 94% - emergency"],
       "topics": ["pneumonia"]
@@ -188,7 +188,7 @@
       "labs": [{"key": "esr", "status": "high", "weight": 1}, {"key": "hemoglobin", "status": "low", "weight": 0.5}],
       "risk_factors": [{"factor": "smoker", "weight": 0.3}, {"factor": "chronic:diabetes", "weight": 0.5}, {"factor": "chronic:hiv", "weight": 1}],
       "scale": 7.5, "min_days": 14, "duration_weight": 2.5,
-      "suggested_tests": ["Sputum test (CBNAAT / GeneXpert or smear)", "Chest X-ray"], "specialist": "Pulmonologist / TB clinic",
+      "suggested_tests": ["Sputum test (CBNAAT / GeneXpert or smear)", "Chest X-ray"],
       "self_care": ["Cover your mouth when coughing and ventilate rooms", "Get tested - TB is curable when treated fully"],
       "see_doctor_if": ["Cough lasting more than 2 weeks, especially with weight loss, night sweats or blood in sputum"],
       "topics": ["tuberculosis"]
@@ -200,7 +200,7 @@
       "key_symptoms": ["headache"], "labs": [],
       "risk_factors": [{"factor": "sex_female", "weight": 0.3}],
       "scale": 5,
-      "suggested_tests": ["Usually clinical diagnosis; a headache diary helps"], "specialist": "Neurologist (if frequent or atypical)",
+      "suggested_tests": ["Usually clinical diagnosis; a headache diary helps"],
       "self_care": ["Rest in a dark, quiet room during attacks", "Keep regular sleep and meals and stay hydrated", "Track possible triggers in a headache diary"],
       "see_doctor_if": ["Headaches are frequent or changing in pattern", "Sudden 'worst ever' headache, headache with fever and stiff neck, weakness, or confusion - emergency"],
       "topics": ["migraine"]
@@ -213,7 +213,7 @@
       "labs": [{"key": "creatinine", "status": "high", "weight": 4}, {"key": "urea", "status": "high", "weight": 1.5}, {"key": "potassium", "status": "high", "weight": 1}, {"key": "hemoglobin", "status": "low", "weight": 0.5}],
       "risk_factors": [{"factor": "chronic:diabetes", "weight": 1}, {"factor": "chronic:hypertension", "weight": 1}, {"factor": "age_over_65", "weight": 0.3}],
       "scale": 5.5, "requires_lab_confirmation": true,
-      "suggested_tests": ["Repeat serum creatinine with eGFR", "Urine albumin-to-creatinine ratio", "Kidney ultrasound if advised"], "specialist": "Nephrologist",
+      "suggested_tests": ["Repeat serum creatinine with eGFR", "Urine albumin-to-creatinine ratio", "Kidney ultrasound if advised"],
       "self_care": ["Keep blood pressure and blood sugar well controlled", "Avoid regular use of painkillers like NSAIDs without medical advice", "Stay hydrated unless told to restrict fluids"],
       "see_doctor_if": ["Creatinine above the reference range", "Very little urine, severe swelling or breathlessness - seek care urgently"],
       "topics": ["chronic_kidney_disease"]
@@ -226,7 +226,7 @@
       "labs": [{"key": "alt", "status": "high", "weight": 3}, {"key": "ast", "status": "high", "weight": 2}, {"key": "bilirubin_total", "status": "high", "weight": 2.5}],
       "risk_factors": [{"factor": "alcohol_regular", "weight": 1}, {"factor": "bmi_over_30", "weight": 0.5}],
       "scale": 5.5, "requires_lab_confirmation": true,
-      "suggested_tests": ["Liver function tests", "Hepatitis B and C serology", "Abdominal ultrasound"], "specialist": "Gastroenterologist / hepatologist",
+      "suggested_tests": ["Liver function tests", "Hepatitis B and C serology", "Abdominal ultrasound"],
       "self_care": ["Avoid alcohol", "Do not take extra paracetamol or herbal supplements without advice", "Maintain a healthy weight"],
       "see_doctor_if": ["Liver tests are abnormal or you notice yellow eyes or dark urine", "Confusion, vomiting blood or severe abdominal pain - emergency"],
       "topics": ["liver", "hepatitis"]
@@ -238,7 +238,7 @@
       "key_symptoms": [],
       "labs": [{"key": "vitamin_d", "status": "low", "weight": 4}],
       "risk_factors": [], "scale": 4.5, "requires_lab_confirmation": true,
-      "suggested_tests": ["25-hydroxy vitamin D", "Calcium"], "specialist": "General physician",
+      "suggested_tests": ["25-hydroxy vitamin D", "Calcium"],
       "self_care": ["Safe daily sunlight exposure", "Include vitamin D sources such as eggs, fish and fortified foods", "Take supplements only at the dose your doctor advises"],
       "see_doctor_if": ["Vitamin D is below the reference range"],
       "topics": ["vitamin_d_deficiency"]
@@ -250,7 +250,7 @@
       "key_symptoms": [],
       "labs": [{"key": "vitamin_b12", "status": "low", "weight": 4}, {"key": "hemoglobin", "status": "low", "weight": 0.5}],
       "risk_factors": [], "scale": 4.5, "requires_lab_confirmation": true,
-      "suggested_tests": ["Serum vitamin B12", "Complete blood count"], "specialist": "General physician",
+      "suggested_tests": ["Serum vitamin B12", "Complete blood count"],
       "self_care": ["Include B12 sources such as dairy, eggs, fish or fortified foods"],
       "see_doctor_if": ["B12 is low or you have persistent numbness or tingling"],
       "topics": ["vitamin_b12_deficiency"]
@@ -261,7 +261,7 @@
       "symptoms": {"low_mood": 4, "sleep_problems": 1.5, "fatigue": 1, "loss_of_appetite": 0.5, "weight_loss": 0.3, "weight_gain": 0.3},
       "key_symptoms": ["low_mood"], "labs": [], "risk_factors": [],
       "scale": 5, "min_days": 14, "duration_weight": 1,
-      "suggested_tests": ["Assessment by a doctor or mental health professional", "Thyroid test to exclude physical causes"], "specialist": "Psychiatrist / psychologist / counsellor",
+      "suggested_tests": ["Assessment by a doctor or mental health professional", "Thyroid test to exclude physical causes"],
       "self_care": ["Talk to someone you trust about how you feel", "Keep a regular routine with sleep, meals and some physical activity", "Limit alcohol"],
       "see_doctor_if": ["Low mood lasting more than two weeks or affecting daily life", "Any thoughts of self-harm - contact a crisis line or emergency services now"],
       "topics": ["mental_health"]

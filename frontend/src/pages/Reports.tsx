@@ -4,7 +4,7 @@ import { FileImage, FileText, UploadCloud } from "lucide-react";
 import { ExtractionBadge } from "../components/badges";
 import { Alert, Badge, Button, Card, EmptyState, Field, Input, PageHeader, Select, Spinner, cx } from "../components/ui";
 import { api } from "../lib/api";
-import { formatBytes, formatDate } from "../lib/format";
+import { extractionNote, formatBytes, formatDate } from "../lib/format";
 import type { ReportSummary } from "../lib/types";
 import { useAsync } from "../lib/useAsync";
 
@@ -69,7 +69,7 @@ export default function ReportsPage() {
         ? "Image uploaded. Quality checks complete."
         : r.extraction_status === "done"
           ? `Uploaded. ${r.lab_values.length} lab value(s) recognised.`
-          : `Uploaded, but text extraction was ${r.extraction_status}: ${r.extraction_error ?? ""}`;
+          : `Uploaded, but ${extractionNote(r.extraction_status)}${r.extraction_error ? `: ${r.extraction_error}` : "."}`;
       setMsg({ kind: r.extraction_status === "done" ? "success" : "warning", text, id: r.id });
       setFile(null);
       setTitle("");

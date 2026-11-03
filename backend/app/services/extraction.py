@@ -132,6 +132,8 @@ def _extract_image_text(data: bytes) -> ExtractionResult:
     try:
         img = Image.open(io.BytesIO(data))
         img.load()
+    except Image.DecompressionBombError:
+        return ExtractionResult("failed", "ocr", error="Image is too large to process safely (too many pixels).")
     except (UnidentifiedImageError, OSError) as exc:
         return ExtractionResult("failed", "ocr", error=f"Unreadable image: {exc}")
     if not tesseract_available():
@@ -150,8 +152,13 @@ def image_quality_features(data: bytes) -> dict:
     """Simple, explainable image statistics. These describe image *quality*,
     not medical findings."""
     img = Image.open(io.BytesIO(data))
+    width, height = img.size  # from the header: the true image size
+    mode, fmt = img.mode, img.format
+    # Statistics are computed on a copy no larger than 1024 px, so a large X-ray does not
+    # need several full-resolution RGB/greyscale copies in memory. JPEGs decode at reduced size.
+    img.draft("RGB", (1024, 1024))
     img.load()
-    width, height = img.size
+    img.thumbnail((1024, 1024))
     rgb = img.convert("RGB")
     gray = ImageOps.grayscale(img)
     stat = ImageStat.Stat(gray)
@@ -179,8 +186,8 @@ def image_quality_features(data: bytes) -> dict:
     return {
         "width": width,
         "height": height,
-        "mode": img.mode,
-        "format": img.format,
+        "mode": mode,
+        "format": fmt,
         "is_grayscale": colorfulness < 6,
         "mean_brightness": round(brightness, 1),
         "contrast": round(contrast, 1),
@@ -194,6 +201,8 @@ def extract(data: bytes, content_type: str, kind: str) -> ExtractionResult:
     if kind == "image":
         try:
             feats = image_quality_features(data)
+        except Image.DecompressionBombError:
+            return ExtractionResult("failed", "image_meta", error="Image is too large to process safely (too many pixels).")
         except (UnidentifiedImageError, OSError) as exc:
             return ExtractionResult("failed", "image_meta", error=f"Unreadable image: {exc}")
         return ExtractionResult("done", "image_meta", image_features=feats)

@@ -2,19 +2,21 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   AlertOctagon, ArrowLeft, Bot, CalendarClock, ChevronDown, ClipboardCheck, FlaskConical, HeartHandshake, ImageIcon,
-  Info, Printer, ShieldAlert, Stethoscope, Trash2, UserCheck,
+  Info, LineChart, Printer, ShieldAlert, Stethoscope, Trash2, UserCheck,
 } from "lucide-react";
 import { MockBadge, UrgencyBadge } from "../components/badges";
-import LabTable from "../components/LabTable";
+import LabResults from "../components/LabResults";
+import SpecialtyCard from "../components/SpecialtyCard";
 import { Alert, Badge, Button, Card, PageHeader, ProgressBar, Spinner, cx } from "../components/ui";
 import { SourceCard } from "./Library";
+import { AssessmentBadge } from "./Trends";
 import { api } from "../lib/api";
 import { confidenceClass, formatDateTime, pct, urgencyMeta } from "../lib/format";
 import type { AiStatus, AssessedCondition, Citation, ConditionMatch, Factor, AnalysisResult } from "../lib/types";
 import { useAsync } from "../lib/useAsync";
 
 const FACTOR_LABEL: Record<Factor["type"], string> = {
-  symptom: "Symptom", lab: "Lab result", risk_factor: "Risk factor", duration: "Duration", image: "Image", missing: "Missing",
+  symptom: "Symptom", lab: "Lab result", risk_factor: "Risk factor", duration: "Duration", image: "Image", missing: "Missing", trend: "Trend",
 };
 
 export function FactorList({ factors }: { factors: Factor[] }) {
@@ -216,7 +218,24 @@ export function ResultView({ result: r }: { result: AnalysisResult }) {
       {(r.lab_values.length > 0 || r.reports.length > 0) && (
         <Card title={<span className="flex items-center gap-2"><FlaskConical className="h-5 w-5 text-brand-600" /> Report interpretation</span>} subtitle={`${r.abnormal_lab_count} of ${r.lab_values.length} recognised values outside typical range`}>
           {r.explanation.report_interpretation && <p className="mb-4 text-sm text-slate-700">{r.explanation.report_interpretation}</p>}
-          <LabTable labs={r.lab_values} />
+          <LabResults labs={r.lab_values} />
+        </Card>
+      )}
+
+      {(r.trends?.length ?? 0) > 0 && (
+        <Card
+          title={<span className="flex items-center gap-2"><LineChart className="h-5 w-5 text-brand-600" /> Changes over time</span>}
+          subtitle="From all of your stored lab results, not only the reports selected for this analysis."
+          actions={<Link to="/trends" className="text-sm text-brand-700 hover:underline">All trends</Link>}
+        >
+          <ul className="space-y-2 text-sm">
+            {r.trends!.filter((t) => t.assessment !== "stable" || t.flags.length > 0).slice(0, 8).map((t) => (
+              <li key={t.code} className="flex flex-wrap items-start justify-between gap-2">
+                <span className="min-w-0 flex-1 text-slate-700">{t.summary}</span>
+                <AssessmentBadge a={t.assessment} />
+              </li>
+            ))}
+          </ul>
         </Card>
       )}
 
@@ -250,8 +269,10 @@ export function ResultView({ result: r }: { result: AnalysisResult }) {
           <ListBlock icon={FlaskConical} title="Tests to ask about" items={r.care_plan.suggested_tests} />
           <ListBlock icon={ClipboardCheck} title="Questions for your doctor" items={r.explanation.questions_for_doctor} />
         </div>
-        {r.care_plan.specialists.length > 0 && <p className="mt-4 text-sm text-slate-600"><strong>Relevant specialists:</strong> {r.care_plan.specialists.join("; ")}</p>}
+        {!r.care_plan.specialty_recommendations && r.care_plan.specialists.length > 0 && <p className="mt-4 text-sm text-slate-600"><strong>Relevant specialists:</strong> {r.care_plan.specialists.join("; ")}</p>}
       </Card>
+
+      {r.care_plan.specialty_recommendations && <SpecialtyCard rec={r.care_plan.specialty_recommendations} />}
 
       {r.sources.length > 0 && (
         <Card title="Evidence used" subtitle="WHO and CDC passages retrieved for these results. Citation numbers match the [S#] tags above.">

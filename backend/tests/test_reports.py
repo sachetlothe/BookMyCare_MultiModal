@@ -15,7 +15,7 @@ def test_upload_pdf_extracts_labs(client, auth):
     assert keys["bp_systolic"]["value"] == 142
 
 
-def test_upload_text_and_list_detail_delete(client, auth):
+def test_upload_text_and_list_detail_delete(client, auth, allow_download):
     r = upload_ok(client, auth, "synthetic_metabolic_panel.txt")
     rid = r["id"]
     listed = client.get("/api/reports", headers=auth).json()
